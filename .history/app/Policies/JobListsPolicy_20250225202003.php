@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Job;
+use App\Models\User;
+
+class JobListsPolicy
+{
+    /**
+     * Create a new policy instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+}
