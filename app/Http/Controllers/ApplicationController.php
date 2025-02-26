@@ -95,13 +95,29 @@ class ApplicationController extends Controller
                 'cover_letter' => 'required',
             ]);
 
+            $user = Auth::user();
+
+            // --
+            // Check if user has already applied to this job
+            $existingApplication = Application::where('job_id', $jobId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingApplication) {
+                return response()->json(['message' => 'You have already applied for this job.'], 400);
+            }
+
             $application = Application::create([
                 'job_id' => $jobId,
                 'user_id' => Auth::id(),
                 'cover_letter' => $request->cover_letter,
             ]);
 
-            // @TODO: sending mail
+            // --
+            //  Queue email notification
+            $job = Job::findOrFail($jobId);
+            \Log::info($job);
+            Mail::to($job->employer->email)->queue(new JobApplicationReceived($user, $job));
             
             return response()->json([
                 'message' => 'Application submitted successfully',

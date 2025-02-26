@@ -9,16 +9,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class JobApplicationReceived extends Mailable
+class JobApplicationReceived extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    public $applicant;
+    public $job;
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($applicant, $job)
     {
-        //
+        $this->applicant = $applicant;
+        $this->job = $job;
     }
 
     /**
@@ -37,7 +41,12 @@ class JobApplicationReceived extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.job_application_received',
+            with: [
+                'applicantName' => $this->applicant->name,
+                'jobTitle' => $this->job->title,
+                'jobEmployer' => $this->job->employer->name,
+            ],
         );
     }
 

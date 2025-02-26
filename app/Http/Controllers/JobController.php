@@ -15,9 +15,19 @@ class JobController extends Controller
      */
     public function index()
     {
-        return \Cache::remember('job_lists', 60, function () {
-            return Job::latest()->get();
-        });
+        try {
+            return \Cache::remember('job_lists', 60, function () {
+                if(Auth()->user()->role == 'employer') {
+                    return Job::where('employer_id', Auth()->user()->id)->latest()->get();
+                } else {
+                    return Job::latest()->get();
+                }
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+               'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
